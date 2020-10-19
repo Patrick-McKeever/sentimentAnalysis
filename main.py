@@ -2,6 +2,8 @@ MAX_TOKS = 512
 MAX_SEQ_LEN = 512
 TRAIN_SIZE = 2000
 TEST_SIZE = 500
+BATCH_SIZE = 4
+EPOCHS = 5
 
 import sys
 import numpy as np
@@ -21,13 +23,11 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import classification_report
 
-#Initialize.
 rn.seed(999)
 np.random.seed(999)
 torch.manual_seed(999)
 torch.cuda.manual_seed(999)
 
-#Create class that will contain test and train datasets.
 class dataset:
     def __init__(self, rawData, tokenizer):
         #Turn dataframe into dict of structure [{column -> value}, … , {column -> value}].
@@ -46,22 +46,27 @@ class dataset:
         tokensRaw = [ tokenizer.tokenize(text)[: tokenCutoff] 
             for text in self.indep ]
         
-        self.tokens = [ (['[CLS]'] + tokenList + ['[SEP]']) 
+        tokens = [ (['[CLS]'] + tokenList + ['[SEP]']) 
             for tokenList in tokensRaw ]
         
         #Get token ids, make tensors.
         tokenIdsRaw = [ tokenizer.convert_tokens_to_ids(token)
-            for token in self.tokens ]
+            for token in tokens ]
         self.tokenIds = pad_sequences(tokenIdsRaw, maxlen = MAX_SEQ_LEN,
             truncating = 'post', padding = 'post', dtype = 'int')
+        self.tokensTensor = torch.tensor(self.tokenIds)
         
-        self.y = map(lambda el: el == 'pos', self.dep)
+        #Make tensors for sentiment type.
+        y = np.array(self.dep) == 'pos'
+        self.yTensor = torch.tensor(y.reshape(-1, 1)).float()
         
-        self.masks = [
+        #Make tensors for masks.
+        masks = [
             [float(idObj > 0) for idObj in idSet]
             for idSet in self.tokenIds
         ]
-
+        self.masksTensor = torch.tensor(masks)
+        
 #Load training/testing data as dictionaries.
 trainingDataRaw = pd.read_csv('data/train.csv')[: TRAIN_SIZE]
 testingDataRaw = pd.read_csv('data/test.csv')[: TEST_SIZE]
@@ -70,17 +75,80 @@ testingDataRaw = pd.read_csv('data/test.csv')[: TEST_SIZE]
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased',
     do_lower_case = 1)
 
-#Make train/test datasets.
 training = dataset(trainingDataRaw, tokenizer)
 testing = dataset(testingDataRaw, tokenizer)
 
-#Initialize algorithms.
+#Unigrams through trigrams.
 cv = CountVectorizer(ngram_range=(1,3))
 logReg = LogisticRegression(max_iter = 1000)
 
-#Create model.
 model = make_pipeline(cv, logReg).fit(training.indep, training.dep)
 
-#Test accuracy.
 predicted = model.predict(testing.indep)
 print(classification_report(testing.dep, predicted))
+
+#Make a neural network based on pytorch requirements.
+class sentClassifier(nn.Module):
+    def __init__(self):
+        super(sentClassifier, self).__init__()
+
+        self.bertModel = BertModel.from_pretrained('bert-base-uncased')
+        bertSize = self.bertModel.config.hidden_size
+        
+        self.drop = nn.Dropout(p = 0.1)
+        self.lin = nn.Linear(bertSize, 1)
+        self.sigmoid = nn.Sigmoid()
+    
+    def forward(self, tokenIds, masks):
+        pooledOut = self.bertModel(tokenIds, attention_mask = masks, 
+            output_all_encoded_layers = 0)[1]
+        
+        output = self.drop(pooledOut)
+        linearOut = self.lin(output)
+        return self.sigmoid(linearOut)
+    
+upgradedModel = sentClassifier()
+modelOnDev = upgradedModel.cpu()
+
+trainData = TensorDataset(training.tokensTensor,
+    training.masksTensor, training.yTensor)
+trainSampler = RandomSampler(trainData)
+trainDataLoader = DataLoader(trainData,
+    sampler = trainSampler, batch_size = BATCH_SIZE)
+
+testData = TensorDataset(testing.tokensTensor,
+    testing.masksTensor, testing.yTensor)
+testSampler = SequentialSampler(testData)
+testDataLoader = DataLoader(testData, 
+    sampler = testSampler, batch_size = BATCH_SIZE)
+
+#Optimize model parameters.
+params = list(modelOnDev.sigmoid.named_parameters()) 
+groupedParams = [{"params": [p for n, p in params]}]
+
+optimizer = Adam(modelOnDev.parameters(), lr = 3e-6)
+
+for epoch in range(EPOCHS):
+    print('here')
+    modelOnDev.train()
+    trainLoss = 0
+    
+    for step, data in enumerate(trainDataLoader):
+        tokenIds, masks, sents = tuple(datum.to('cpu') for datum in data)
+        logits = modelOnDev(tokenIds, masks)
+        
+        lossFunc = nn.BCELoss()
+
+        batchLoss = lossFunc(logits, sents)
+        trainLoss += batchLoss.item()
+        
+        modelOnDev.zero_grad()
+        batchLoss.backward()
+        
+        clip_grad_norm_(parameters = modelOnDev.parameters(),
+            max_norm = 1.0)
+        optimizer.step()
+        
+        clear_output(wait = 1)
+        print('Epoch: ', step + 1)
+        print("\r" + "{0}/{1} loss: {2} ".format(step, len(trainData) / BATCH_SIZE, trainLoss / (step + 1)))
