@@ -1,4 +1,4 @@
-# sentimentAnalysis
+# Untitled Sentiment Analysis Project
 
 A small sentiment analysis project trained on the IMDB review dataset using BERT.
 
@@ -21,4 +21,4 @@ The "base model" (logistic regression) achieves the following accuracy scores:
 weighted avg       0.83      0.83      0.83       500
 ```
 
-The latter model, using pre-trained BERT network (base model only used BERT for tokenization), remains a work in progress. Code should compile, but Debian's lack of driver's for my GPU means I have to use CPU, prompting memory overflows. At the moment, I am unable to verify effectiveness or assess accuracy.
+The latter model, using pre-trained BERT network (base model only used BERT for tokenization), remains a work in progress. Code should compile, but Debian's lack of drivers for my GPU means I have to use CPU, prompting memory overflows. At the moment, I am unable to verify effectiveness or assess accuracy.
