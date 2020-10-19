@@ -23,11 +23,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import classification_report
 
-rn.seed(999)
-np.random.seed(999)
-torch.manual_seed(999)
-torch.cuda.manual_seed(999)
-
+#Used to instantiate training and testing datasets.
 class dataset:
     def __init__(self, rawData, tokenizer):
         #Turn dataframe into dict of structure [{column -> value}, … , {column -> value}].
