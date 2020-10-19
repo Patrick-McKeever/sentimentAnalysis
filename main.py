@@ -57,8 +57,8 @@ class dataset:
         self.tokensTensor = torch.tensor(self.tokenIds)
         
         #Make tensors for sentiment type.
-        y = np.array(self.dep) == 'pos'
-        self.yTensor = torch.tensor(y.reshape(-1, 1)).float()
+        self.y = np.array(self.dep) == 'pos'
+        self.yTensor = torch.tensor(self.y.reshape(-1, 1)).float()
         
         #Make tensors for masks.
         masks = [
@@ -152,3 +152,24 @@ for epoch in range(EPOCHS):
         clear_output(wait = 1)
         print('Epoch: ', step + 1)
         print("\r" + "{0}/{1} loss: {2} ".format(step, len(trainData) / BATCH_SIZE, trainLoss / (step + 1)))
+        
+        
+modelOnDev.eval()
+predicted = []
+cumLogits = []
+with torch.no_grad():
+    for step, data in enumerate(test_dataloader):
+        tokenIds, masks, sents = tuple(datum.to('cpu') for datum in data)
+        logits = modelOnDev(tokenIds, masks)
+        
+        lossFunc = nn.BCELoss()
+        batchLoss = lossFunc(logits, sents)
+        
+        loss = lossFunc(logits, labels)
+        numLogits = logits.cpu().detach().numpy()
+        
+        predicted += list(numLogits[:, 0] > 0.5)
+        cumLogits += list(numLogits[:, 0])
+
+np.mean(predicted)
+print(classification_report(testing.y, predicted))
