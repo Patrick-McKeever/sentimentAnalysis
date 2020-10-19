@@ -129,7 +129,6 @@ groupedParams = [{"params": [p for n, p in params]}]
 optimizer = Adam(modelOnDev.parameters(), lr = 3e-6)
 
 for epoch in range(EPOCHS):
-    print('here')
     modelOnDev.train()
     trainLoss = 0
     
