@@ -153,7 +153,7 @@ modelOnDev.eval()
 predicted = []
 cumLogits = []
 with torch.no_grad():
-    for step, data in enumerate(test_dataloader):
+    for step, data in enumerate(testDataloader):
         tokenIds, masks, sents = tuple(datum.to('cpu') for datum in data)
         logits = modelOnDev(tokenIds, masks)
         
