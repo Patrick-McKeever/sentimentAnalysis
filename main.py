@@ -10,6 +10,7 @@ import numpy as np
 import random as rn
 import pandas as pd
 import torch
+import pickle
 from pytorch_pretrained_bert import BertModel
 from torch import nn
 from pytorch_pretrained_bert import BertTokenizer
@@ -148,7 +149,7 @@ for epoch in range(EPOCHS):
         print('Epoch: ', step + 1)
         print("\r" + "{0}/{1} loss: {2} ".format(step, len(trainData) / BATCH_SIZE, trainLoss / (step + 1)))
         
-        
+pickle.dump(modelOnDev, open('finalModel.sav', 'wb+'))
 modelOnDev.eval()
 
 predicted = []
