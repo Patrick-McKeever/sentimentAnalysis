@@ -168,5 +168,4 @@ with torch.no_grad():
         predicted += list(numLogits[:, 0] > 0.5)
         cumLogits += list(numLogits[:, 0])
 
-np.mean(predicted)
 print(classification_report(testing.y, predicted))
