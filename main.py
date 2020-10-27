@@ -150,17 +150,19 @@ for epoch in range(EPOCHS):
         
         
 modelOnDev.eval()
+
 predicted = []
 cumLogits = []
 with torch.no_grad():
-    for step, data in enumerate(testDataloader):
+    for step, data in enumerate(testDataLoader):
+        print('step %d of %d' % (step, len(testDataLoader)))
         tokenIds, masks, sents = tuple(datum.to('cpu') for datum in data)
         logits = modelOnDev(tokenIds, masks)
         
         lossFunc = nn.BCELoss()
         batchLoss = lossFunc(logits, sents)
         
-        loss = lossFunc(logits, labels)
+        loss = lossFunc(logits, sents)
         numLogits = logits.cpu().detach().numpy()
         
         predicted += list(numLogits[:, 0] > 0.5)
