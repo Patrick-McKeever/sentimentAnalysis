@@ -155,7 +155,7 @@ for epoch in range(EPOCHS):
         
         clear_output(wait = 1)
         print('Epoch: ', epoch + 1)
-        print("\r" + "{0}/{1} loss: {2} ".format(step, len(trainData) / BATCH_SIZE, trainLoss / (step + 1)))
+        print('\r' + '%d/%d loss: %d ' % (step, len(trainData) / BATCH_SIZE, trainLoss / (step + 1)))
 
 pickle.dump(modelOnDev, open('finalModel.sav', 'wb+'))
 
