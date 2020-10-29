@@ -4,7 +4,7 @@ A small sentiment analysis project trained on the IMDB review dataset using BERT
 
 ## Data
 
-Based on the well-known IMDB review dataset, available in the 'data' directory.
+Based on the well-known IMDB review dataset, available in the `data` directory.
 
 ## Results
 
