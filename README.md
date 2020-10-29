@@ -21,4 +21,15 @@ The "base model" (logistic regression) achieves the following accuracy scores:
 weighted avg       0.83      0.83      0.83       500
 ```
 
-The latter model, using pre-trained BERT network (base model only used BERT for tokenization), remains a work in progress. Code should compile, but Debian's lack of drivers for my GPU means I have to use CPU, prompting an "out of memory" kill. At the moment, I am unable to verify effectiveness (code never progresses past epoch loop on line 131) or assess accuracy for the latter half of the script.
+The latter model, using pre-trained BERT network (base model only used BERT for tokenization), produces the following results:
+
+```
+precision    recall  f1-score   support
+
+       False       0.91      0.90      0.91       246
+        True       0.91      0.91      0.91       254
+
+    accuracy                           0.91       500
+   macro avg       0.91      0.91      0.91       500
+weighted avg       0.91      0.91      0.91       500
+```
