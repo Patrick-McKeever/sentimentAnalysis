@@ -84,7 +84,7 @@ cv = CountVectorizer(ngram_range = (1, 3))
 logReg = LogisticRegression(max_iter = 1000)
 
 model = make_pipeline(cv, logReg).fit(training.indep, training.dep)
-pickle.dump(model, open('naiveBayes.sav', 'wb+'))
+pickle.dump(model, open('logReg.sav', 'wb+'))
 
 predicted = model.predict(testing.indep)
 print(classification_report(testing.dep, predicted))
