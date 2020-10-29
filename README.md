@@ -36,4 +36,4 @@ weighted avg       0.91      0.91      0.91       500
 
 ## Models
 
-The aforementioned models are available in pickle form. `naiveBayes.sav` refers to the naive-bayes model, while `finalModel.sav` refers to the BERT model.
+The aforementioned models are available in pickle form. `logReg.sav` refers to the logistic regression model, while `finalModel.sav` refers to the BERT model.
