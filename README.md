@@ -21,7 +21,7 @@ The "base model" (logistic regression) achieves the following accuracy scores:
 weighted avg       0.83      0.83      0.83       500
 ```
 
-The latter model, using pre-trained BERT network (base model only used BERT for tokenization), produces the following results:
+The latter model, using pre-trained BERT network (base model only used BERT for tokenization), produces the following results given a training sample of n = 2000 and 5 epochs worth of training:
 
 ```
               precision    recall  f1-score   support
@@ -33,3 +33,7 @@ The latter model, using pre-trained BERT network (base model only used BERT for 
    macro avg       0.91      0.91      0.91       500
 weighted avg       0.91      0.91      0.91       500
 ```
+
+## Models
+
+The aforementioned models are available in pickle form. `naiveBayes.sav` refers to the naive-bayes model, while `finalModel.sav` refers to the BERT model.
