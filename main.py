@@ -153,9 +153,13 @@ for epoch in range(EPOCHS):
             max_norm = 1.0)
         optimizer.step()
         
+        totalSteps = len(trainData) / BATCH_SIZE
+        currentLoss = trainLoss / (step + 1)
+
         clear_output(wait = 1)
         print('Epoch: ', epoch + 1)
-        print('\r' + '%d/%d loss: %d ' % (step, len(trainData) / BATCH_SIZE, trainLoss / (step + 1)))
+        print('\r' + '%d/%d loss: %f ' 
+            % (step, totalSteps, currentLoss))
 
 pickle.dump(modelOnDev, open('finalModel.sav', 'wb+'))
 
