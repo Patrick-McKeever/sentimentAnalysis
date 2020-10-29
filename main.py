@@ -14,7 +14,7 @@ import pickle
 from pytorch_pretrained_bert import BertModel
 from torch import nn
 from pytorch_pretrained_bert import BertTokenizer
-from keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
 from torch.optim import Adam
 from torch.nn.utils import clip_grad_norm_
@@ -23,6 +23,8 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import classification_report
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 #Used to instantiate training and testing datasets.
 class dataset:
@@ -56,6 +58,8 @@ class dataset:
         #Make tensors for sentiment type.
         self.y = np.array(self.dep) == 'pos'
         self.yTensor = torch.tensor(self.y.reshape(-1, 1)).float()
+        
+        self.x = torch.tensor(self.tokenIds[ : 3])
         
         #Make tensors for masks.
         masks = [
@@ -103,9 +107,9 @@ class sentClassifier(nn.Module):
         output = self.drop(pooledOut)
         linearOut = self.lin(output)
         return self.sigmoid(linearOut)
-    
+
 upgradedModel = sentClassifier()
-modelOnDev = upgradedModel.cpu()
+modelOnDev = upgradedModel.cuda()
 
 trainData = TensorDataset(training.tokensTensor,
     training.masksTensor, training.yTensor)
@@ -130,8 +134,11 @@ for epoch in range(EPOCHS):
     trainLoss = 0
     
     for step, data in enumerate(trainDataLoader):
-        tokenIds, masks, sents = tuple(datum.to('cpu') for datum in data)
+        print(str(torch.cuda.memory_allocated(device)/1000000 ) + 'M')
+        print(step)
+        tokenIds, masks, sents = tuple(datum.cuda() for datum in data)
         logits = modelOnDev(tokenIds, masks)
+        
         
         lossFunc = nn.BCELoss()
 
@@ -146,18 +153,17 @@ for epoch in range(EPOCHS):
         optimizer.step()
         
         clear_output(wait = 1)
-        print('Epoch: ', step + 1)
+        print('Epoch: ', epoch + 1)
         print("\r" + "{0}/{1} loss: {2} ".format(step, len(trainData) / BATCH_SIZE, trainLoss / (step + 1)))
-        
+
 pickle.dump(modelOnDev, open('finalModel.sav', 'wb+'))
-modelOnDev.eval()
 
 predicted = []
 cumLogits = []
 with torch.no_grad():
     for step, data in enumerate(testDataLoader):
         print('step %d of %d' % (step, len(testDataLoader)))
-        tokenIds, masks, sents = tuple(datum.to('cpu') for datum in data)
+        tokenIds, masks, sents = tuple(datum.cuda() for datum in data)
         logits = modelOnDev(tokenIds, masks)
         
         lossFunc = nn.BCELoss()
