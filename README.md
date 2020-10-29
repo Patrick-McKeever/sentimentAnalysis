@@ -24,7 +24,7 @@ weighted avg       0.83      0.83      0.83       500
 The latter model, using pre-trained BERT network (base model only used BERT for tokenization), produces the following results:
 
 ```
-precision    recall  f1-score   support
+              precision    recall  f1-score   support
 
        False       0.91      0.90      0.91       246
         True       0.91      0.91      0.91       254
