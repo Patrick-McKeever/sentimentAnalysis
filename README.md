@@ -4,7 +4,7 @@ A small sentiment analysis project trained on the IMDB review dataset using BERT
 
 ## Data
 
-Based on the well-known IMDB review dataset. Although the files were too large to upload to github (exceed 25mb upper cap), they are publicly available in multiple locations after a cursory google.
+Based on the well-known IMDB review dataset, available in the 'data' directory.
 
 ## Results
 
